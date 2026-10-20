@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chatbot Embed Builder | DigiMarketingAI</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Top Header */
+    header {
+      background: #0f172a;
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .badge {
+      background: #2563eb;
+      color: #fff;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-link {
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .header-link:hover { text-decoration: underline; }
+
+    /* Main Layout */
+    .container {
+      max-width: 1240px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .panel-title {
+      margin: 0 0 18px 0;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Form Controls */
+    .form-group { margin-bottom: 14px; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    input[type="text"], input[type="url"], input[type="number"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    textarea { resize: vertical; min-height: 62px; }
+
+    /* Quick Pickers */
+    .quick-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .chip-btn {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 9px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .chip-btn:hover { background: #e2e8f0; }
+
+    /* Theme Presets */
+    .theme-preset {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      cursor: pointer;
+    }
+    .theme-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    /* Color Pickers */
+    .color-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 4px 10px;
+    }
+    input[type="color"] {
+      border: none;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+    .color-hex {
+      font-family: monospace;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    /* Code Box & Buttons */
+    .code-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      padding: 14px;
+      border-radius: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      border: 1px solid #334155;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn:hover { opacity: 0.92; }
+    .btn-success { background: #10b981 !important; }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #94a3b8;
+      color: #f8fafc;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+    .steps {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+
+    /* Modal for Importing URL / Code */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active { display: flex; }
+    .modal {
+      background: #fff;
+      max-width: 540px;
+      width: 100%;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal h3 { margin: 0 0 8px 0; font-size: 17px; }
+    .modal p { margin: 0 0 12px 0; font-size: 13px; color: #475569; }
+
+    /* Standalone Embed Mode (?embed=1) */
+    body.embed-only {
+      background: transparent;
+      padding: 8px;
+    }
+    body.embed-only header,
+    body.embed-only #editorPanel,
+    body.embed-only #exportSection,
+    body.embed-only .preview-header {
+      display: none !important;
+    }
+    body.embed-only .container {
+      display: block;
+      margin: 0 auto;
+      padding: 0;
+    }
+    body.embed-only #previewPanel {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAVBAR -->
+  <header>
+    <div class="brand">
+      <span>🤖 AI Chatbot Embed Builder</span>
+      <span class="badge">Student Edition</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="openImportModal()">📥 Import Existing URL / Code</button>
+      <a class="header-link" href="https://github.com/digimarketingai/ai-chatbot-embed" target="_blank">GitHub Repo ↗</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- LEFT PANEL: CUSTOMIZER -->
+    <div class="panel" id="editorPanel">
+      <div class="panel-title">
+        <span>1. Customize Your AI Chatbot Panel</span>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-secondary" onclick="openImportModal()">📥 Import</button>
+          <button class="btn btn-secondary" onclick="resetDefaults()">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Chatbot URL -->
+      <div class="form-group">
+        <label>🔗 Your Chatbot URL (Zapier Chatbot / Poe / Custom Link)</label>
+        <input type="url" id="botUrl" value="https://your-chatbot-name.zapier.app" placeholder="https://your-chatbot-name.zapier.app" oninput="updateWidget()" />
+      </div>
+
+      <!-- Icon & Logo URL -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>🤖 Icon Emoji</label>
+          <input type="text" id="botIcon" value="🤖" oninput="updateWidget()" />
+          <div class="quick-bar">
+            <button type="button" class="chip-btn" onclick="setEmoji('🤖')">🤖</button>
+            <button type="button" class="chip-btn" onclick="setEmoji('💬')">💬</button>
+            <button type="button" class="chip-btn" onclick="setEmoji('✨')">✨</button>
+            <button type="button" class="chip-btn" onclick="setEmoji('👩‍💼')">👩‍💼</button>
+            <button type="button" class="chip-btn" onclick="setEmoji('🛍️')">🛍️</button>
+            <button type="button" class="chip-btn" onclick="setEmoji('🎓')">🎓</button>
+            <button type="button" class="chip-btn" onclick="setEmoji('🏥')">🏥</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>🖼️ Logo Image URL (Optional)</label>
+          <input type="url" id="logoUrl" value="" placeholder="https://.../logo.png (Overrides emoji)" oninput="updateWidget()" />
+        </div>
+      </div>
+
+      <!-- Brand Title & Subtitle -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>🏷️ Brand / Chatbot Name</label>
+          <input type="text" id="botTitle" value="AI 智能客服助手 (AI Assistant)" oninput="updateWidget()" />
+        </div>
+        <div class="form-group">
+          <label>✨ Subtitle / Tagline</label>
+          <input type="text" id="botSub" value="24/7 Official AI Customer Support" oninput="updateWidget()" />
+        </div>
+      </div>
+
+      <!-- Descriptions -->
+      <div class="form-group">
+        <label>📝 Main Description (Chinese / Primary Text)</label>
+        <textarea id="descMain" oninput="updateWidget()">點擊下方按鈕開啟對話視窗，即時查詢產品資訊、服務方案及常見問題。</textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>🌐 Secondary Note (English / Subtext)</label>
+          <input type="text" id="descSub" value="Click below to launch our live AI assistant window." oninput="updateWidget()" />
+        </div>
+        <div class="form-group">
+          <label>🔘 Call-to-Action Button Text</label>
+          <input type="text" id="btnText" value="💬 開始對話 / Start Chat" oninput="updateWidget()" />
+        </div>
+      </div>
+
+      <!-- Color Theme Presets -->
+      <div class="form-group">
+        <label>🎨 Quick Color Themes</label>
+        <div class="quick-bar">
+          <button type="button" class="theme-preset" onclick="setTheme('#2563eb','#1d4ed8')">
+            <span class="theme-dot" style="background:#2563eb"></span> Ocean Blue
+          </button>
+          <button type="button" class="theme-preset" onclick="setTheme('#059669','#047857')">
+            <span class="theme-dot" style="background:#059669"></span> Emerald
+          </button>
+          <button type="button" class="theme-preset" onclick="setTheme('#7c3aed','#5b21b6')">
+            <span class="theme-dot" style="background:#7c3aed"></span> Royal Purple
+          </button>
+          <button type="button" class="theme-preset" onclick="setTheme('#ea580c','#c2410c')">
+            <span class="theme-dot" style="background:#ea580c"></span> Sunset Orange
+          </button>
+          <button type="button" class="theme-preset" onclick="setTheme('#e11d48','#be123c')">
+            <span class="theme-dot" style="background:#e11d48"></span> Rose Pink
+          </button>
+          <button type="button" class="theme-preset" onclick="setTheme('#0f172a','#334155')">
+            <span class="theme-dot" style="background:#0f172a"></span> Dark Slate
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Color Pickers -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>🖌️ Primary Color</label>
+          <div class="color-input-wrap">
+            <input type="color" id="color1" value="#2563eb" oninput="updateWidget()" />
+            <span class="color-hex" id="color1Hex">#2563eb</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>🖌️ Gradient Secondary Color</label>
+          <div class="color-input-wrap">
+            <input type="color" id="color2" value="#1d4ed8" oninput="updateWidget()" />
+            <span class="color-hex" id="color2Hex">#1d4ed8</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popup Dimensions -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>📐 Popup Chat Width (px)</label>
+          <input type="number" id="popW" value="450" min="320" max="1200" oninput="updateWidget()" />
+        </div>
+        <div class="form-group">
+          <label>📐 Popup Chat Height (px)</label>
+          <input type="number" id="popH" value="700" min="400" max="1000" oninput="updateWidget()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: LIVE PREVIEW & GOOGLE SITES EXPORT -->
+    <div class="panel" id="previewPanel">
+      <div class="panel-title preview-header">
+        <span>2. Live Interactive Preview</span>
+        <span style="font-size:12px; color:#64748b; font-weight:500;">Click the button below to test your popup!</span>
+      </div>
+
+      <!-- LIVE WIDGET PREVIEW -->
+      <div id="livePreviewContainer"></div>
+
+      <!-- EXPORT SECTION -->
+      <div id="exportSection" style="margin-top: 28px;">
+        <div class="panel-title">
+          <span>3. Embed into Google Sites</span>
+        </div>
+
+        <!-- Method A: HTML Embed Code -->
+        <label>Method A (Recommended): Copy HTML Code &rarr; Google Sites "Embed Code"</label>
+        <div class="code-box" id="htmlCodeOutput"></div>
+        <div style="margin-top: 10px;">
+          <button class="btn" id="copyHtmlBtn" onclick="copyHtmlCode()" style="width: 100%;">
+            📋 Copy HTML Embed Code for Google Sites
+          </button>
+        </div>
+
+        <!-- Method B: Direct Embeddable Link -->
+        <div style="margin-top: 18px;">
+          <label>Method B: Direct Embed Link &rarr; Google Sites "By URL" or Share with Teacher</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="directUrlOutput" readonly style="background:#f8fafc; font-size:12px; color:#475569;" />
+            <button class="btn btn-secondary" id="copyUrlBtn" onclick="copyDirectUrl()" style="white-space: nowrap;">
+              🔗 Copy URL
+            </button>
+          </div>
+        </div>
+
+        <div class="steps">
+          <strong>🎓 How to add this to your Google Site:</strong><br>
+          1. Paste your Zapier Chatbot URL (`https://...zapier.app`) in Step 1.<br>
+          2. Customize your title, description, and brand colors.<br>
+          3. Click <strong>Copy HTML Embed Code</strong> above.<br>
+          4. Open <strong>Google Sites</strong> &rarr; click <strong>Insert (插入) &rarr; Embed (嵌入) &rarr; Embed code (嵌入程式碼)</strong> &rarr; Paste &amp; click <strong>Next &rarr; Insert</strong>!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT MODAL -->
+  <div class="modal-backdrop" id="importModal">
+    <div class="modal">
+      <h3>📥 Import Chatbot URL, Share Link, or HTML Code</h3>
+      <p>Paste a Zapier URL, a previously generated Share URL, or your existing HTML embed snippet below to load its settings automatically:</p>
+      <textarea id="importInput" rows="5" placeholder="Paste https://your-chatbot-name.zapier.app OR your <div>...</div> HTML code here..."></textarea>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+        <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+        <button class="btn" onclick="processImport()">⚡ Load into Builder</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_CONFIG = {
+      url: 'https://your-chatbot-name.zapier.app',
+      icon: '🤖',
+      logo: '',
+      title: 'AI 智能客服助手 (AI Assistant)',
+      sub: '24/7 Official AI Customer Support',
+      descMain: '點擊下方按鈕開啟對話視窗，即時查詢產品資訊、服務方案及常見問題。',
+      descSub: 'Click below to launch our live AI assistant window.',
+      btnText: '💬 開始對話 / Start Chat',
+      color1: '#2563eb',
+      color2: '#1d4ed8',
+      popW: '450',
+      popH: '700'
+    };
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function setEmoji(emoji) {
+      document.getElementById('botIcon').value = emoji;
+      document.getElementById('logoUrl').value = '';
+      updateWidget();
+    }
+
+    function setTheme(c1, c2) {
+      document.getElementById('color1').value = c1;
+      document.getElementById('color2').value = c2;
+      updateWidget();
+    }
+
+    function buildWidgetHtml(data) {
+      const safeUrl = esc(data.url.trim() || DEFAULT_CONFIG.url);
+      const safeIcon = esc(data.icon);
+      const safeLogo = esc(data.logo.trim());
+      const safeTitle = esc(data.title);
+      const safeSub = esc(data.sub);
+      const safeDescMain = esc(data.descMain).replace(/\n/g, '<br>');
+      const safeDescSub = esc(data.descSub);
+      const safeBtn = esc(data.btnText);
+      const c1 = esc(data.color1);
+      const c2 = esc(data.color2);
+      const w = parseInt(data.popW, 10) || 450;
+      const h = parseInt(data.popH, 10) || 700;
+
+      const headerVisual = safeLogo
+        ? `<img src="${safeLogo}" alt="Logo" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 2px solid rgba(255,255,255,0.8);" />`
+        : `<div style="font-size: 40px; margin-bottom: 8px;">${safeIcon}</div>`;
+
+      return `<div style="font-family: 'Segoe UI', sans-serif; max-width: 420px; margin: 20px auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.08); background: #ffffff; text-align: center;">
+  <div style="background: linear-gradient(135deg, ${c1}, ${c2}); color: white; padding: 24px 20px;">
+    ${headerVisual}
+    <h2 style="margin: 0; font-size: 20px;">${safeTitle}</h2>
+    <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.9;">${safeSub}</p>
+  </div>
+  <div style="padding: 24px 20px;">
+    <p style="color: #475569; font-size: 14px; line-height: 1.5; margin-top: 0;">
+      ${safeDescMain}<br>
+      <span style="font-size: 12px; color: #94a3b8;">${safeDescSub}</span>
+    </p>
+    <button onclick="window.open('${safeUrl}', 'AIChatWindow', 'width=${w},height=${h},resizable=yes,scrollbars=yes')" 
+            style="background: ${c1}; color: white; border: none; padding: 14px 28px; font-size: 15px; font-weight: 600; border-radius: 999px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.18); width: 100%;">
+      ${safeBtn}
+    </button>
+  </div>
+</div>`;
+    }
+
+    function getFormData() {
+      return {
+        url: document.getElementById('botUrl').value,
+        icon: document.getElementById('botIcon').value,
+        logo: document.getElementById('logoUrl').value,
+        title: document.getElementById('botTitle').value,
+        sub: document.getElementById('botSub').value,
+        descMain: document.getElementById('descMain').value,
+        descSub: document.getElementById('descSub').value,
+        btnText: document.getElementById('btnText').value,
+        color1: document.getElementById('color1').value,
+        color2: document.getElementById('color2').value,
+        popW: document.getElementById('popW').value,
+        popH: document.getElementById('popH').value
+      };
+    }
+
+    function applyParamsToForm(q) {
+      if (q.get('url')) document.getElementById('botUrl').value = q.get('url');
+      if (q.get('icon')) document.getElementById('botIcon').value = q.get('icon');
+      if (q.get('logo')) document.getElementById('logoUrl').value = q.get('logo');
+      if (q.get('title')) document.getElementById('botTitle').value = q.get('title');
+      if (q.get('sub')) document.getElementById('botSub').value = q.get('sub');
+      if (q.get('dm')) document.getElementById('descMain').value = q.get('dm');
+      if (q.get('ds')) document.getElementById('descSub').value = q.get('ds');
+      if (q.get('btn')) document.getElementById('btnText').value = q.get('btn');
+      if (q.get('c1')) document.getElementById('color1').value = q.get('c1');
+      if (q.get('c2')) document.getElementById('color2').value = q.get('c2');
+      if (q.get('w')) document.getElementById('popW').value = q.get('w');
+      if (q.get('h')) document.getElementById('popH').value = q.get('h');
+    }
+
+    function updateWidget() {
+      const data = getFormData();
+      document.getElementById('color1Hex').textContent = data.color1;
+      document.getElementById('color2Hex').textContent = data.color2;
+
+      const htmlSnippet = buildWidgetHtml(data);
+      document.getElementById('livePreviewContainer').innerHTML = htmlSnippet;
+      document.getElementById('htmlCodeOutput').textContent = htmlSnippet;
+
+      const params = new URLSearchParams({
+        embed: '1',
+        url: data.url,
+        icon: data.icon,
+        logo: data.logo,
+        title: data.title,
+        sub: data.sub,
+        dm: data.descMain,
+        ds: data.descSub,
+        btn: data.btnText,
+        c1: data.color1,
+        c2: data.color2,
+        w: data.popW,
+        h: data.popH
+      });
+      const baseUrl = window.location.origin + window.location.pathname;
+      document.getElementById('directUrlOutput').value = `${baseUrl}?${params.toString()}`;
+    }
+
+    function copyHtmlCode() {
+      const code = document.getElementById('htmlCodeOutput').textContent;
+      navigator.clipboard.writeText(code);
+      const btn = document.getElementById('copyHtmlBtn');
+      btn.textContent = '✅ Copied HTML Embed Code!';
+      btn.classList.add('btn-success');
+      setTimeout(() => {
+        btn.textContent = '📋 Copy HTML Embed Code for Google Sites';
+        btn.classList.remove('btn-success');
+      }, 2000);
+    }
+
+    function copyDirectUrl() {
+      const urlInput = document.getElementById('directUrlOutput');
+      navigator.clipboard.writeText(urlInput.value);
+      const btn = document.getElementById('copyUrlBtn');
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => { btn.textContent = '🔗 Copy URL'; }, 2000);
+    }
+
+    function openImportModal() {
+      document.getElementById('importInput').value = '';
+      document.getElementById('importModal').classList.add('active');
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('active');
+    }
+
+    function processImport() {
+      const raw = document.getElementById('importInput').value.trim();
+      if (!raw) return closeImportModal();
+
+      // Case 1: Full shareable builder URL with query params
+      if (raw.includes('?embed=1') || raw.includes('&url=')) {
+        try {
+          const urlObj = new URL(raw);
+          applyParamsToForm(urlObj.searchParams);
+          updateWidget();
+          return closeImportModal();
+        } catch (e) {}
+      }
+
+      // Case 2: Pasted HTML Embed Snippet
+      if (raw.includes('<div') && raw.includes('window.open')) {
+        const urlMatch = raw.match(/window\.open\(['"]([^'"]+)['"]/);
+        if (urlMatch) document.getElementById('botUrl').value = urlMatch[1];
+
+        const h2Match = raw.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+        if (h2Match) document.getElementById('botTitle').value = h2Match[1].trim();
+
+        const btnMatch = raw.match(/<button[^>]*>([\s\S]*?)<\/button>/i);
+        if (btnMatch) document.getElementById('btnText').value = btnMatch[1].trim();
+
+        const gradMatch = raw.match(/linear-gradient\(135deg,\s*(#[0-9a-fA-F]{6}),\s*(#[0-9a-fA-F]{6})\)/i);
+        if (gradMatch) {
+          document.getElementById('color1').value = gradMatch[1];
+          document.getElementById('color2').value = gradMatch[2];
+        }
+        updateWidget();
+        return closeImportModal();
+      }
+
+      // Case 3: Direct Chatbot Link (e.g. https://...zapier.app)
+      if (raw.startsWith('http://') || raw.startsWith('https://')) {
+        document.getElementById('botUrl').value = raw;
+        updateWidget();
+        return closeImportModal();
+      }
+
+      alert('Could not recognize the input. Please paste a valid URL or HTML embed snippet.');
+    }
+
+    function resetDefaults() {
+      document.getElementById('botUrl').value = DEFAULT_CONFIG.url;
+      document.getElementById('botIcon').value = DEFAULT_CONFIG.icon;
+      document.getElementById('logoUrl').value = DEFAULT_CONFIG.logo;
+      document.getElementById('botTitle').value = DEFAULT_CONFIG.title;
+      document.getElementById('botSub').value = DEFAULT_CONFIG.sub;
+      document.getElementById('descMain').value = DEFAULT_CONFIG.descMain;
+      document.getElementById('descSub').value = DEFAULT_CONFIG.descSub;
+      document.getElementById('btnText').value = DEFAULT_CONFIG.btnText;
+      document.getElementById('color1').value = DEFAULT_CONFIG.color1;
+      document.getElementById('color2').value = DEFAULT_CONFIG.color2;
+      document.getElementById('popW').value = DEFAULT_CONFIG.popW;
+      document.getElementById('popH').value = DEFAULT_CONFIG.popH;
+      updateWidget();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get('embed') === '1') {
+        document.body.classList.add('embed-only');
+      }
+      applyParamsToForm(q);
+      updateWidget();
+    });
+  </script>
+</body>
+</html>
