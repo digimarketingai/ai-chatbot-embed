@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 譯後編輯 (APE) 實戰白話指南 | Accessible Bilingual Guide to AI Post-Editing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    code, pre, .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Language Toggle Visibility Rules */
+    body[data-lang="zh"] .lang-en { display: none !important; }
+    body[data-lang="en"] .lang-zh { display: none !important; }
+    body[data-lang="bi"] .lang-en { display: block; }
+    body[data-lang="bi"] .lang-zh { display: block; }
+    body[data-lang="bi"] span.lang-en, body[data-lang="bi"] span.lang-zh { display: inline; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    .diagram-box {
+      background: radial-gradient(circle at top right, #eef2ff 0%, #ffffff 70%);
+    }
+    .pulse-arrow {
+      animation: pulseRight 2s infinite;
+    }
+    @keyframes pulseRight {
+      0%, 100% { transform: translateX(0); opacity: 0.7; }
+      50% { transform: translateX(5px); opacity: 1; }
+    }
+  </style>
+</head>
+<body data-lang="bi" class="min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
+
+  <!-- STICKY TOP NAVBAR -->
+  <header class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center font-black text-lg shadow-inner">
+          PE
+        </div>
+        <div>
+          <div class="font-bold text-sm sm:text-base tracking-tight flex items-center gap-2">
+            <span class="lang-zh">AI 譯後編輯 (APE) 實戰白話指南</span>
+            <span class="lang-en text-indigo-300 font-medium text-xs sm:text-sm">Plain-Language Guide to AI Post-Editing</span>
+          </div>
+          <div class="text-[11px] text-slate-400 hidden sm:block">
+            OpenAI Prompt Architecture × ISO 18587 × GEMBA-MQM × Zapier GPT-5.6
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Pills -->
+      <nav class="hidden lg:flex items-center gap-1 text-xs font-medium bg-slate-800/90 p-1 rounded-xl border border-slate-700">
+        <a href="#sec-why" class="px-3 py-1.5 rounded-lg hover:bg-slate-700 transition">1. 痛點診斷 / Why ChatGPT Fails</a>
+        <a href="#sec-pillars" class="px-3 py-1.5 rounded-lg hover:bg-slate-700 transition">2. 兩大秘訣 / 2 Core Pillars</a>
+        <a href="#sec-templates" class="px-3 py-1.5 rounded-lg hover:bg-slate-700 transition">3. 四大範本 / 4 Archetypes</a>
+        <a href="#sec-compiler" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow">4. 指令編譯器 / Compiler</a>
+        <a href="#sec-portfolio" class="px-3 py-1.5 rounded-lg hover:bg-slate-700 transition">5. 作品集嵌入 / Embed</a>
+      </nav>
+
+      <!-- Language Mode Switcher -->
+      <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
+        <button onclick="setLang('bi')" id="btn-lang-bi" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white transition">
+          中英對照 Bi
+        </button>
+        <button onclick="setLang('zh')" id="btn-lang-zh" class="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition">
+          純中文 ZH
+        </button>
+        <button onclick="setLang('en')" id="btn-lang-en" class="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition">
+          EN Only
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="bg-slate-900 text-white border-b border-slate-800 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:20px_20px]"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative z-10">
+      <div class="max-w-4xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold mb-4">
+          <span>✨ 零術語負擔・圖解秒懂・直接複製實作</span>
+          <span class="opacity-50">|</span>
+          <span>Jargon-Free Visual Blueprint & Interactive Generator</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight mb-4">
+          <span class="lang-zh block">別再只對 AI 說「幫我改通順一點」！</span>
+          <span class="lang-en block text-indigo-300 text-2xl sm:text-4xl mt-2 font-extrabold">Stop telling AI: "Make this translation sound natural."</span>
+        </h1>
+        <p class="text-slate-300 text-base sm:text-lg leading-relaxed mb-6">
+          <span class="lang-zh block mb-1">把艱澀的 OpenAI 官方指南與計算語言學論文，變成最直白的「緊箍咒」與「抓蟲SOP」。用視覺化圖解帶你一步步把免費版 Zapier Chatbot 改造成專業的<strong>自動譯後編輯器 (Automatic Post-Editor, APE)</strong>。</span>
+          <span class="lang-en block text-slate-400 text-sm sm:text-base">We translated dense OpenAI documentation and computational linguistics papers into plain-language guardrails and visual diagrams. Follow this step-by-step guide to turn a free Zapier Chatbot into a disciplined, ISO-compliant Automatic Post-Editor.</span>
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="#sec-compiler" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+            <span>🛠️ 直接前往「五步驟指令編譯器」 / Jump to 5-Step Compiler</span>
+          </a>
+          <a href="#sec-why" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold text-sm transition">
+            <span>📖 先看圖解白話教學 / Read Visual Guide First</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20 flex-1">
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1: WHY GENERAL CHATGPT FAILS AT POST-EDITING + DIAGRAM 1  -->
+    <!-- ================================================================= -->
+    <section id="sec-why" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700 font-black text-xs uppercase tracking-wider">Part 01</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+          <span class="lang-zh">核心觀念：為什麼一般的 ChatGPT 做不好「譯後編輯 (PE)」？</span>
+          <span class="lang-en text-lg sm:text-xl font-bold text-slate-600 block">Core Concept: Why Default ChatGPT Fails at Post-Editing</span>
+        </h2>
+      </div>
+      <p class="text-slate-600 mb-8 max-w-4xl">
+        <span class="lang-zh block">很多人在用 ChatGPT 改翻譯稿時，只會打一句：<strong>「請幫我把這段翻譯改得通順、道地一點。」</strong> 結果 AI 常常犯下三個讓專業譯者抓狂的毛病：</span>
+        <span class="lang-en block text-sm text-slate-500 mt-1">When most people use ChatGPT to polish translations, they simply type: <em>"Please make this translation smooth and natural."</em> This vague instruction triggers three fatal flaws that drive professional translators crazy:</span>
+      </p>
+
+      <!-- DIAGRAM 1: VAGUE PROMPT VS TIGHTENED APE SYSTEM -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 mb-8">
+        <div class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-4 flex items-center gap-2">
+          <span>📊 視覺化圖解 1：為什麼你需要「緊箍咒」系統指令？ / Visual Diagram 1: Naive Prompt vs. Disciplined APE</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <!-- Left: Bad Naive Way -->
+          <div class="lg:col-span-5 bg-rose-50/70 border-2 border-rose-200 rounded-2xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-md bg-rose-600 text-white text-xs font-bold">❌ 一般人的問法 / Naive Chat Prompt</span>
+                <span class="text-xs font-mono text-rose-700">No Guardrails</span>
+              </div>
+              <div class="bg-white border border-rose-200 rounded-xl p-3 font-mono text-xs text-slate-700 mb-4 shadow-inner">
+                "請幫我把這段翻譯改得通順、道地一點..."<br>
+                <span class="text-slate-400">"Please make this translation sound natural..."</span>
+              </div>
+
+              <div class="space-y-3">
+                <div class="bg-white p-3.5 rounded-xl border border-rose-200 shadow-sm">
+                  <div class="font-bold text-rose-800 text-sm">1. 手太癢（過度編修 Over-editing）</div>
+                  <p class="lang-zh text-xs text-slate-600 mt-1">原本機器翻譯（Raw MT）沒錯的句子，它也硬要換成同義詞或全部重寫，反而改出新錯誤。</p>
+                  <p class="lang-en text-xs text-slate-500 mt-1">Rewrites sentences that were already accurate in Raw MT, swapping synonyms unnecessarily and introducing fresh errors.</p>
+                </div>
+                <div class="bg-white p-3.5 rounded-xl border border-rose-200 shadow-sm">
+                  <div class="font-bold text-rose-800 text-sm">2. 不看原文亂腦補（幻覺 Hallucination）</div>
+                  <p class="lang-zh text-xs text-slate-600 mt-1">只看中文字面順不順，卻把原文重要的限定詞漏掉了，或是自己亂加解釋。</p>
+                  <p class="lang-en text-xs text-slate-500 mt-1">Optimizes for target fluency while ignoring the source text—dropping crucial modifiers or inventing unstated facts.</p>
+                </div>
+                <div class="bg-white p-3.5 rounded-xl border border-rose-200 shadow-sm">
+                  <div class="font-bold text-rose-800 text-sm">3. 不守規矩（術語不一致 Term Drift）</div>
+                  <p class="lang-zh text-xs text-slate-600 mt-1">客戶規定 <code class="bg-rose-100 px-1 rounded">Token</code> 要翻成「詞元」，它偏偏一下翻「代幣」、一下翻「令牌」。</p>
+                  <p class="lang-en text-xs text-slate-500 mt-1">Client requires <code class="bg-rose-100 px-1 rounded">Token</code> = "詞元", but AI randomly alternates between "代幣" (coin) and "令牌" (badge).</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Center Transformation Arrow -->
+          <div class="lg:col-span-2 flex flex-col items-center justify-center py-4">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 font-black text-2xl pulse-arrow">
+              ➔
+            </div>
+            <div class="text-center mt-3">
+              <div class="text-xs font-extrabold text-indigo-700 uppercase tracking-wider">戴上緊箍咒</div>
+              <div class="text-[11px] text-slate-500 font-medium">OpenAI Structure<br>+ GEMBA-MQM</div>
+            </div>
+          </div>
+
+          <!-- Right: Disciplined APE Engine -->
+          <div class="lg:col-span-5 bg-emerald-50/70 border-2 border-emerald-300 rounded-2xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-md bg-emerald-700 text-white text-xs font-bold">✅ 專業自動譯後編輯器 / Disciplined APE</span>
+                <span class="text-xs font-mono text-emerald-800">ISO 18587 + MQM</span>
+              </div>
+              <div class="bg-slate-900 text-emerald-300 rounded-xl p-3 font-mono text-xs mb-4 shadow-inner">
+                # Role &amp; Constraints (Markdown 大綱)<br>
+                &lt;terminology_constraints&gt; (XML 保鮮盒)<br>
+                Step 1: MQM Audit ➔ Step 2: Minimal Edit
+              </div>
+
+              <div class="space-y-3">
+                <div class="bg-white p-3.5 rounded-xl border border-emerald-200 shadow-sm">
+                  <div class="font-bold text-emerald-900 text-sm">1. 最小修改原則（Minimal Edit Distance）</div>
+                  <p class="lang-zh text-xs text-slate-600 mt-1">下達嚴格「負向限制」：沒錯的字不准動！只針對有問題的語法與誤譯動刀。</p>
+                  <p class="lang-en text-xs text-slate-500 mt-1">Strict negative constraints: If it isn't broken, don't touch it. Edit only verified accuracy or grammar defects.</p>
+                </div>
+                <div class="bg-white p-3.5 rounded-xl border border-emerald-200 shadow-sm">
+                  <div class="font-bold text-emerald-900 text-sm">2. 先體檢、再動刀（2-Stage GEMBA-MQM）</div>
+                  <p class="lang-zh text-xs text-slate-600 mt-1">強迫 AI 先畫出「錯誤診斷表」抓出漏譯與誤譯，第二階段才准根據表格修改。</p>
+                  <p class="lang-en text-xs text-slate-500 mt-1">Forces AI to output an MQM error table first (spotting omissions/mistranslations), then fix only those flagged errors.</p>
+                </div>
+                <div class="bg-white p-3.5 rounded-xl border border-emerald-200 shadow-sm">
+                  <div class="font-bold text-emerald-900 text-sm">3. XML 密封保鮮盒鎖死術語（Zero-Cost Lock）</div>
+                  <p class="lang-zh text-xs text-slate-600 mt-1">把強制術語表關進 <code class="bg-emerald-100 px-1 rounded">&lt;terminology_constraints&gt;</code> 標籤，100% 遵守且永久免費。</p>
+                  <p class="lang-en text-xs text-slate-500 mt-1">Seals glossary rules inside <code class="bg-emerald-100 px-1 rounded">&lt;terminology_constraints&gt;</code> tags for 100% compliance at zero cost.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2: TWO THEORETICAL PILLARS + VISUAL DIAGRAMS 2, 3, 4      -->
+    <!-- ================================================================= -->
+    <section id="sec-pillars" class="scroll-mt-20 space-y-12">
+      <div>
+        <div class="flex items-center gap-3 mb-3">
+          <span class="px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 font-black text-xs uppercase tracking-wider">Part 02</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+            <span class="lang-zh">兩大理論基石（用最白話的方式講給學生聽）</span>
+            <span class="lang-en text-lg sm:text-xl font-bold text-slate-600 block">Two Core Pillars (Explained in Plain Language with Diagrams)</span>
+          </h2>
+        </div>
+      </div>
+
+      <!-- PILLAR 1: OPENAI MARKDOWN + XML HYBRID ARCHITECTURE -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">基石一 / Pillar 1: OpenAI Official Prompt Engineering</span>
+            <h3 class="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+              <span class="lang-zh">為什麼要混用 Markdown (<code class="text-indigo-600">#</code>) 與 XML 標籤 (<code class="text-emerald-600">&lt; &gt;</code>)？</span>
+              <span class="lang-en text-base sm:text-lg font-bold text-slate-500 block">Why Combine Markdown Headings (#) with XML Containers (&lt; &gt;)?</span>
+            </h3>
+          </div>
+        </div>
+
+        <!-- DIAGRAM 2: BLUEPRINT vs TUPPERWARE + ZAPIER 14-DAY BYPASS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Card 1: Markdown -->
+          <div class="rounded-2xl border-2 border-indigo-200 bg-indigo-50/40 p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-mono font-bold text-xs"># Markdown 標題</span>
+                <span class="text-2xl">📑</span>
+              </div>
+              <h4 class="font-black text-slate-900 text-lg mb-2">
+                <span class="lang-zh">＝「員工手冊的章節大綱」</span>
+                <span class="lang-en text-sm font-bold text-indigo-700 block">= "Employee Handbook Chapter Outline"</span>
+              </h4>
+              <p class="lang-zh text-sm text-slate-600 leading-relaxed mb-3">
+                就像給員工的工作手冊目錄（例如：<code class="bg-white px-1.5 py-0.5 rounded border text-xs"># 你的角色</code>、<code class="bg-white px-1.5 py-0.5 rounded border text-xs"># 改稿規則</code>、<code class="bg-white px-1.5 py-0.5 rounded border text-xs"># 輸出格式</code>），讓 AI 清楚知道指令的輕重緩急與先後順序。
+              </p>
+              <p class="lang-en text-xs text-slate-500 leading-relaxed">
+                Acts like a clear table of contents (<code class="bg-white px-1 rounded"># Role</code>, <code class="bg-white px-1 rounded"># Rules</code>, <code class="bg-white px-1 rounded"># Output Format</code>) so GPT-5.6 understands the hierarchy and execution order of your instructions.
+              </p>
+            </div>
+            <div class="mt-4 bg-slate-900 text-indigo-300 p-3 rounded-xl font-mono text-xs">
+              # Role &amp; Objective<br>
+              ## Negative Constraints<br>
+              # Workflow &amp; Output Format
+            </div>
+          </div>
+
+          <!-- Card 2: XML Tags -->
+          <div class="rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 rounded-lg bg-emerald-600 text-white font-mono font-bold text-xs">&lt;tag&gt;...&lt;/tag&gt; XML 標籤</span>
+                <span class="text-2xl">🍱</span>
+              </div>
+              <h4 class="font-black text-slate-900 text-lg mb-2">
+                <span class="lang-zh">＝「絕對不串味的密封保鮮盒」</span>
+                <span class="lang-en text-sm font-bold text-emerald-700 block">= "Airtight Tupperware Containers"</span>
+              </h4>
+              <p class="lang-zh text-sm text-slate-600 leading-relaxed mb-3">
+                因為 XML 有明確的「開頭 <code class="bg-white px-1 rounded text-xs">&lt;tag&gt;</code>」和「結尾 <code class="bg-white px-1 rounded text-xs">&lt;/tag&gt;</code>」，AI 絕對不會把裡面的資料跟外面的指令搞混！我們用它來裝<strong>強制術語表</strong>、<strong>三元組範例</strong>與<strong>待改稿件</strong>。
+              </p>
+              <p class="lang-en text-xs text-slate-500 leading-relaxed">
+                Because XML has explicit opening <code class="bg-white px-1 rounded">&lt;tag&gt;</code> and closing <code class="bg-white px-1 rounded">&lt;/tag&gt;</code> boundaries, AI never confuses data with instructions. Use it to seal glossaries, examples, and user inputs.
+              </p>
+            </div>
+            <div class="mt-4 bg-slate-900 text-emerald-300 p-3 rounded-xl font-mono text-xs">
+              &lt;terminology_constraints&gt;<br>
+              &nbsp;&nbsp;Token = 詞元<br>
+              &lt;/terminology_constraints&gt;
+            </div>
+          </div>
+
+          <!-- Card 3: The Zapier Free Tier Hack -->
+          <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 rounded-lg bg-amber-600 text-white font-bold text-xs">💡 超大好處：省錢秘技 / Pro Hack</span>
+                <span class="text-2xl">🔓</span>
+              </div>
+              <h4 class="font-black text-slate-900 text-lg mb-2">
+                <span class="lang-zh">破解 Zapier 14 天檔案過期限制！</span>
+                <span class="lang-en text-sm font-bold text-amber-800 block">Bypass Zapier's 14-Day Knowledge Trial Limit!</span>
+              </h4>
+              <p class="lang-zh text-sm text-slate-700 leading-relaxed mb-3">
+                Zapier 免費版上傳檔案（Knowledge Sources）<strong>只能試用 14 天就會過期鎖死</strong>；但如果你用 <code class="bg-white px-1 rounded text-xs font-mono">&lt;terminology_constraints&gt;</code> 把術語表直接寫進免費的 <code class="bg-white px-1 rounded text-xs font-mono">Instructions</code> 欄位裡，<strong>永遠免費、永遠不會過期！</strong>
+              </p>
+              <p class="lang-en text-xs text-slate-600 leading-relaxed">
+                Uploading files to Zapier's "Knowledge" tab locks after a 14-day trial. Embedding your glossary inside <code class="bg-white px-1 rounded font-mono">&lt;terminology_constraints&gt;</code> directly in the <code class="bg-white px-1 rounded font-mono">Instructions</code> tab is <strong>100% free forever!</strong>
+              </p>
+            </div>
+            <div class="mt-4 bg-white border border-amber-300 rounded-xl p-3 text-xs space-y-1.5">
+              <div class="flex items-center justify-between text-rose-600 font-semibold">
+                <span>❌ Upload File (Knowledge Tab)</span>
+                <span>14 天後鎖死 / Locks in 14d</span>
+              </div>
+              <div class="flex items-center justify-between text-emerald-700 font-bold">
+                <span>✅ XML in Instructions Tab</span>
+                <span>永久免費 / Free Forever!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PILLAR 2: ACADEMIC RESEARCH (ISO 18587 + GEMBA-MQM + FEW-SHOT TRIPLET) -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-8">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">基石二 / Pillar 2: Translation Technology Research Standards</span>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+            <span class="lang-zh">學術界最新研究：什麼是「ISO 18587」、「GEMBA-MQM」與「三元組範例」？</span>
+            <span class="lang-en text-base sm:text-lg font-bold text-slate-500 block">Academic Standards in Plain English: ISO 18587, GEMBA-MQM &amp; Few-Shot Triplets</span>
+          </h3>
+        </div>
+
+        <!-- 1. ISO 18587 Dial Diagram -->
+        <div class="border border-slate-200 rounded-2xl p-5 bg-slate-50/60">
+          <div class="font-black text-slate-900 text-base sm:text-lg mb-3 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+            <span>ISO 18587:2017（國際譯後編輯標準）：決定你的「改稿力道」 / Choosing Your Editing Intensity</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex gap-4 items-start">
+              <div class="px-3 py-2 rounded-xl bg-sky-100 text-sky-800 font-black text-xs shrink-0 text-center">
+                Light PE<br>輕度編修
+              </div>
+              <div>
+                <div class="font-bold text-slate-900 text-sm">「能看懂就好，只改致命錯字與誤譯，不改文筆」</div>
+                <p class="lang-en text-xs text-slate-500 mt-1">"Good enough to understand. Fix only fatal mistranslations and grammar errors; do not polish style."</p>
+                <div class="mt-2 text-[11px] text-sky-700 font-medium">⚡ 適用：內部大量技術文件、即時客服、快速瀏覽</div>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm flex gap-4 items-start">
+              <div class="px-3 py-2 rounded-xl bg-indigo-100 text-indigo-800 font-black text-xs shrink-0 text-center">
+                Full PE<br>完整編修
+              </div>
+              <div>
+                <div class="font-bold text-slate-900 text-sm">「改到像母語人士寫的出版級文章，徹底消滅翻譯腔」</div>
+                <p class="lang-en text-xs text-slate-500 mt-1">"Publishable, native-level quality. Completely eliminate robotic 'translationese' and awkward phrasing."</p>
+                <div class="mt-2 text-[11px] text-indigo-700 font-medium">✨ 適用：對外行銷文案、新聞稿、正式出版品、期末作品集</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. GEMBA-MQM 2-Stage Pipeline Diagram -->
+        <div class="border border-slate-200 rounded-2xl p-5 bg-slate-50/60">
+          <div class="font-black text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+            <span>GEMBA-MQM 兩階段改稿法（微軟研究院提出）：「先列表抓蟲、再精準動刀」</span>
+          </div>
+          <p class="lang-zh text-sm text-slate-600 mb-4">
+            研究發現，如果叫 AI 直接改稿，它會亂改；但如果規定它<strong>「第一階段：先列表格抓蟲並扣分 ➔ 第二階段：只針對抓出來的蟲進行修改」</strong>，AI 的準確度會暴增，而且不會亂改沒錯的句子！
+          </p>
+          <p class="lang-en text-xs text-slate-500 mb-4">
+            Microsoft Research (Kocmi &amp; Federmann) proved that asking AI to edit directly causes random rewrites. Forcing a <strong>2-Stage Pipeline (Stage 1: Diagnose &amp; Score Errors in an MQM Table ➔ Stage 2: Fix ONLY Flagged Errors)</strong> dramatically boosts accuracy and prevents over-editing.
+          </p>
+
+          <!-- Visual Pipeline Flow -->
+          <div class="grid grid-cols-1 lg:grid-cols-11 gap-3 items-center bg-white p-4 rounded-2xl border border-slate-200">
+            <!-- Input Box -->
+            <div class="lg:col-span-3 bg-slate-900 text-slate-200 p-3.5 rounded-xl font-mono text-xs">
+              <div class="text-amber-400 font-bold mb-1">📥 輸入 / XML Input</div>
+              &lt;source_text&gt;...&lt;/source_text&gt;<br>
+              &lt;raw_mt&gt;...面具了關鍵的遺漏...&lt;/raw_mt&gt;
+            </div>
+
+            <div class="lg:col-span-1 text-center font-black text-indigo-600 text-xl">➔</div>
+
+            <!-- Stage 1 Box -->
+            <div class="lg:col-span-3 bg-amber-50 border-2 border-amber-300 p-3.5 rounded-xl">
+              <div class="text-xs font-black text-amber-900 uppercase">🩺 第一階段：先體檢抓蟲 (Stage 1: MQM Audit)</div>
+              <div class="text-[11px] text-slate-700 mt-1">先畫表格標出錯誤類型與扣分：</div>
+              <div class="mt-2 flex flex-wrap gap-1 text-[10px] font-bold">
+                <span class="px-2 py-0.5 rounded bg-rose-600 text-white">Critical 致命 -25</span>
+                <span class="px-2 py-0.5 rounded bg-amber-500 text-white">Major 嚴重 -5</span>
+                <span class="px-2 py-0.5 rounded bg-slate-500 text-white">Minor 輕微 -1</span>
+              </div>
+              <div class="mt-2 text-[11px] font-mono bg-white p-1.5 rounded border border-amber-200 text-slate-700">
+                抓出: "mask" 誤譯為動詞「面具了」(Major -5)
+              </div>
+            </div>
+
+            <div class="lg:col-span-1 text-center font-black text-indigo-600 text-xl">➔</div>
+
+            <!-- Stage 2 Box -->
+            <div class="lg:col-span-3 bg-emerald-50 border-2 border-emerald-300 p-3.5 rounded-xl">
+              <div class="text-xs font-black text-emerald-900 uppercase">刀 第二階段：精準動刀 (Stage 2: Targeted Fix)</div>
+              <div class="text-[11px] text-slate-700 mt-1">只針對表上的蟲修改，沒錯的不准動：</div>
+              <div class="mt-2 text-[11px] font-mono bg-white p-2 rounded border border-emerald-200 text-emerald-950 font-semibold">
+                「...進而<strong>掩蓋了</strong>關鍵的漏譯...」<br>
+                <span class="text-[10px] text-emerald-700 font-normal">✓ 零過度編修 ✓ 附帶修改理由</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Few-Shot Triplet Diagram -->
+        <div class="border border-slate-200 rounded-2xl p-5 bg-slate-50/60">
+          <div class="font-black text-slate-900 text-base sm:text-lg mb-2 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+            <span>Few-Shot Triplet（三元組示範教學）：與其講一百遍規則，不如給看一組「黃金對照」</span>
+          </div>
+          <p class="lang-zh text-sm text-slate-600 mb-4">
+            與其跟 AI 講一百遍「請消除歐化中文」，不如直接給它看一組<strong>「三元組範例 (Triplet)」</strong>，AI 看完一組真實對照，馬上就能抓到你想要的改稿力道與文風！
+          </p>
+          <p class="lang-en text-xs text-slate-500 mb-4">
+            Instead of lecturing AI on abstract style rules, show it one <strong>Few-Shot Triplet</strong> inside XML tags. One concrete before-and-after example calibrates GPT-5.6's editing intensity better than 500 words of rules.
+          </p>
+
+          <!-- Visual Formula of a Triplet -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-xl border-l-4 border-slate-500 shadow-sm">
+              <div class="text-xs font-mono font-bold text-slate-500">① 原文 &lt;source_text&gt;</div>
+              <p class="text-xs text-slate-800 font-medium mt-2">
+                "The new API enables developers to deploy models with minimal latency."
+              </p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border-l-4 border-rose-500 shadow-sm">
+              <div class="text-xs font-mono font-bold text-rose-600">② 爛機翻 &lt;raw_mt&gt; (歐化翻譯腔)</div>
+              <p class="text-xs text-slate-800 font-medium mt-2">
+                「新的 API <span class="underline decoration-rose-500 decoration-wavy">使開發人員能夠以最小的延遲進行模型的部署</span>。」
+              </p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm">
+              <div class="text-xs font-mono font-bold text-emerald-600">③ 人類滿分範本 &lt;gold_pe&gt;</div>
+              <p class="text-xs text-slate-900 font-bold mt-2">
+                「透過新版 API，開發人員能以極低延遲部署模型。」
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3: THE 4 PROMPT ARCHETYPES (INTERACTIVE SELECTOR)         -->
+    <!-- ================================================================= -->
+    <section id="sec-templates" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-3 py-1 rounded-lg bg-amber-100 text-amber-800 font-black text-xs uppercase tracking-wider">Part 03</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+          <span class="lang-zh">四大提示工程範本庫：哪一種適合你的任務？</span>
+          <span class="lang-en text-lg sm:text-xl font-bold text-slate-600 block">The 4 Prompt Archetypes: Which One Fits Your Task?</span>
+        </h2>
+      </div>
+      <p class="text-slate-600 mb-6">
+        <span class="lang-zh">點擊下方任一張範本卡片，即可直接將該模式載入下方的「步驟四：GPT-5.6 系統指令編譯器」中！</span>
+        <span class="lang-en text-sm text-slate-500 block">Click any archetype card below to inspect its plain-language logic and load it directly into the live compiler in Part 4.</span>
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Template A -->
+        <div class="bg-white rounded-2xl border-2 border-slate-200 hover:border-indigo-500 transition p-5 flex flex-col justify-between shadow-sm">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-md bg-sky-100 text-sky-800 font-black text-xs">範本 A / Archetype A</span>
+              <span class="text-xs font-mono text-slate-400">ISO Light PE</span>
+            </div>
+            <h3 class="font-black text-lg text-slate-900">
+              <span class="lang-zh">🛡️ 守門員模式 (最小修改)</span>
+              <span class="lang-en text-sm font-bold text-indigo-600 block">The Gatekeeper (Minimal Edit)</span>
+            </h3>
+            <p class="lang-zh text-xs text-slate-600 mt-2 leading-relaxed">
+              <strong>核心技巧：</strong>下達嚴格的「負向限制（不准換同義詞、不准改文風）」，只修補嚴重誤譯與語法破洞。
+            </p>
+            <p class="lang-en text-xs text-slate-500 mt-1 leading-relaxed">
+              <strong>Core Trick:</strong> Strict negative constraints (no synonym swapping or stylistic rewriting). Fixes only factual errors and broken grammar.
+            </p>
+            <div class="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700">
+              <strong>⏱️ 什麼時候用：</strong>趕時間、海量內部技術文件、只要看懂意思就好的場合。
+            </div>
+          </div>
+          <button onclick="applyPreset('A')" class="mt-4 w-full py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+            ⚡ 套用範本 A 到編譯器 / Load A
+          </button>
+        </div>
+
+        <!-- Template B -->
+        <div class="bg-white rounded-2xl border-2 border-slate-200 hover:border-indigo-500 transition p-5 flex flex-col justify-between shadow-sm">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 font-black text-xs">範本 B / Archetype B</span>
+              <span class="text-xs font-mono text-slate-400">Few-Shot Triplet</span>
+            </div>
+            <h3 class="font-black text-lg text-slate-900">
+              <span class="lang-zh">🎓 名師示範模式 (三元組)</span>
+              <span class="lang-en text-sm font-bold text-indigo-600 block">Master Demonstration (Triplet)</span>
+            </h3>
+            <p class="lang-zh text-xs text-slate-600 mt-2 leading-relaxed">
+              <strong>核心技巧：</strong>在指令裡塞入一組「原文 + 歐化機翻 ➔ 道地中文」的完美範例，讓 AI 模仿人類譯者的手藝。
+            </p>
+            <p class="lang-en text-xs text-slate-500 mt-1 leading-relaxed">
+              <strong>Core Trick:</strong> Embeds a <code class="font-mono">&lt;source&gt; + &lt;raw_mt&gt; ➔ &lt;gold_pe&gt;</code> triplet so AI mimics human stylistic naturalness.
+            </p>
+            <div class="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700">
+              <strong>✨ 什麼時候用：</strong>行銷文案、新聞稿、演講稿等需要「徹底消滅機器翻譯腔 (Full PE)」的文章。
+            </div>
+          </div>
+          <button onclick="applyPreset('B')" class="mt-4 w-full py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+            ⚡ 套用範本 B 到編譯器 / Load B
+          </button>
+        </div>
+
+        <!-- Template C (Highlighted Recommended) -->
+        <div class="bg-white rounded-2xl border-2 border-indigo-600 ring-4 ring-indigo-500/10 transition p-5 flex flex-col justify-between shadow-md relative">
+          <div class="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
+            ⭐ 最推薦教學與作品集 / Best for Portfolio
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-black text-xs">範本 C / Archetype C</span>
+              <span class="text-xs font-mono text-indigo-600 font-bold">GEMBA-MQM CoT</span>
+            </div>
+            <h3 class="font-black text-lg text-slate-900">
+              <span class="lang-zh">🩺 先體檢再動刀 (MQM-APE)</span>
+              <span class="lang-en text-sm font-bold text-indigo-600 block">Diagnose First, Cut Second (CoT)</span>
+            </h3>
+            <p class="lang-zh text-xs text-slate-600 mt-2 leading-relaxed">
+              <strong>核心技巧：</strong>強迫 AI 先畫出「MQM 錯誤診斷表」並扣分（Critical -25 / Major -5 / Minor -1），最後才給出修改稿。
+            </p>
+            <p class="lang-en text-xs text-slate-500 mt-1 leading-relaxed">
+              <strong>Core Trick:</strong> Forces an MQM error audit table with severity scoring before outputting the final post-edited translation.
+            </p>
+            <div class="mt-3 p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-200 text-[11px] text-indigo-950">
+              <strong>🏆 什麼時候用：</strong>醫療、法律、技術手冊或翻譯品質評估 (LQA) 訓練，過程透明一目了然！
+            </div>
+          </div>
+          <button onclick="applyPreset('C')" class="mt-4 w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow">
+            ⚡ 套用範本 C 到編譯器 / Load C
+          </button>
+        </div>
+
+        <!-- Template D -->
+        <div class="bg-white rounded-2xl border-2 border-slate-200 hover:border-indigo-500 transition p-5 flex flex-col justify-between shadow-sm">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-black text-xs">範本 D / Archetype D</span>
+              <span class="text-xs font-mono text-slate-400">XML Glossary Lock</span>
+            </div>
+            <h3 class="font-black text-lg text-slate-900">
+              <span class="lang-zh">🔒 術語鐵衛模式 (XML 沙盒)</span>
+              <span class="lang-en text-sm font-bold text-indigo-600 block">Terminology Iron Guard (XML)</span>
+            </h3>
+            <p class="lang-zh text-xs text-slate-600 mt-2 leading-relaxed">
+              <strong>核心技巧：</strong>用 XML 標籤鎖死「強制翻譯詞」與「禁止翻譯詞 (DNT)」，並要求 AI 最後附上一張「術語合規檢查表」。
+            </p>
+            <p class="lang-en text-xs text-slate-500 mt-1 leading-relaxed">
+              <strong>Core Trick:</strong> Locks mandatory terms and Do-Not-Translate (DNT) brands inside XML tags and requires a Term Compliance Audit table.
+            </p>
+            <div class="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700">
+              <strong>🔐 什麼時候用：</strong>軟體介面 (UI) 本地化、品牌專屬詞庫控管、API 技術手冊。
+            </div>
+          </div>
+          <button onclick="applyPreset('D')" class="mt-4 w-full py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+            ⚡ 套用範本 D 到編譯器 / Load D
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4: STEP-BY-STEP COMPILER & LIVE STRESS TEST               -->
+    <!-- ================================================================= -->
+    <section id="sec-compiler" class="scroll-mt-20">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-black text-xs uppercase tracking-wider">Part 04</span>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+              <span class="lang-zh">手把手實作：GPT-5.6 系統指令編譯器 (含壓力測試題)</span>
+              <span class="lang-en text-lg sm:text-xl font-bold text-slate-600 block">Hands-On: GPT-5.6 System Prompt Compiler &amp; Stress Test</span>
+            </h2>
+          </div>
+          <p class="text-slate-600 text-sm">
+            <span class="lang-zh">照著左側表單勾選 1~8 項，右側就會即時編譯出符合 OpenAI 規範的結構化指令，直接複製貼進 Zapier Chatbot 的 <code class="font-mono bg-slate-200 px-1.5 py-0.5 rounded">Instructions</code> 即可！</span>
+            <span class="lang-en block text-xs text-slate-500 mt-1">Configure steps 1–8 on the left to compile your production-ready OpenAI Markdown+XML prompt on the right. Copy and paste directly into Zapier Chatbots!</span>
+          </p>
+        </div>
+        <button onclick="loadTeachingPreset()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition flex items-center gap-2">
+          <span>✨ 載入完整教學範例 / Load Full Teaching Demo</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- LEFT COLUMN: 8-ITEM CONFIGURATION FORM -->
+        <div class="lg:col-span-6 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
+          <div class="text-xs font-black uppercase tracking-wider text-indigo-600 border-b border-slate-100 pb-3">
+            📋 第一步 &amp; 第二步：勾選你的設定與防呆護欄 (Steps 1–8)
+          </div>
+
+          <!-- 1. Prompt Architecture -->
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1.5">
+              1. 提示工程架構 / Prompt Architecture Archetype
+            </label>
+            <select id="cfg-arch" onchange="compilePrompt()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="C">範本 C：先體檢再動刀 CoT 兩階段偵錯修正 (GEMBA-MQM + APE) ★最推薦</option>
+              <option value="A">範本 A：守門員模式 (ISO Light PE 最小修改距離)</option>
+              <option value="B">範本 B：名師示範模式 (Few-Shot Triplet 三元組教學)</option>
+              <option value="D">範本 D：術語鐵衛模式 (XML 術語沙盒 + 合規檢查表)</option>
+            </select>
+          </div>
+
+          <!-- 2 & 3. Language Pair & Prompt Language -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1.5">
+                2. 翻譯語言對 / Language Pair
+              </label>
+              <select id="cfg-pair" onchange="compilePrompt()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-medium">
+                <option value="en-zhTW">English ➔ 繁體中文 (台灣慣用詞 zh-TW)</option>
+                <option value="zhTW-en">繁體中文 ➔ English (US Professional)</option>
+                <option value="ja-zhTW">日本語 ➔ 繁體中文 (台灣慣用詞 zh-TW)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1.5">
+                3. 系統指令語言 / System Prompt Language
+              </label>
+              <select id="cfg-syslang" onchange="compilePrompt()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-medium">
+                <option value="zh">繁體中文系統指令 (適合上課教學看懂每一行)</option>
+                <option value="en">English System Prompt (OpenAI 服從度最高，仍回繁中)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 4 & 5. ISO Level & Domain -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1.5">
+                4. ISO 18587 編修力道 / PE Level
+              </label>
+              <select id="cfg-iso" onchange="compilePrompt()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-medium">
+                <option value="full">Full PE (完整編修：母語出版級、消滅翻譯腔)</option>
+                <option value="light">Light PE (輕度編修：只改錯字誤譯、不改文筆)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1.5">
+                5. 專業領域 / Domain Register
+              </label>
+              <select id="cfg-domain" onchange="compilePrompt()" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-medium">
+                <option value="AI 與軟體科技 (AI & Software Localization)">AI 與軟體科技 (AI &amp; Tech)</option>
+                <option value="商業行銷與公關 (Marketing & PR Copywriting)">商業行銷與公關 (Marketing &amp; PR)</option>
+                <option value="生醫與臨床研究 (Medical & Clinical Life Sciences)">生醫與臨床研究 (Medical &amp; Clinical)</option>
+                <option value="法律與合約規範 (Legal & Compliance)">法律與合約規範 (Legal &amp; Contracts)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 6. Negative Constraints -->
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-2">
+              6. 防呆護欄（負向限制 Negative Constraints）— 建議全勾！
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <label class="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-indigo-50/40">
+                <input type="checkbox" id="nc-synonym" checked onchange="compilePrompt()" class="mt-0.5 rounded text-indigo-600" />
+                <span><strong>禁止亂換同義詞</strong> (No Preferential Synonym Swapping)</span>
+              </label>
+              <label class="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-indigo-50/40">
+                <input type="checkbox" id="nc-hallucinate" checked onchange="compilePrompt()" class="mt-0.5 rounded text-indigo-600" />
+                <span><strong>禁止腦補或漏譯</strong> (Zero Hallucination / Omission)</span>
+              </label>
+              <label class="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-indigo-50/40">
+                <input type="checkbox" id="nc-european" checked onchange="compilePrompt()" class="mt-0.5 rounded text-indigo-600" />
+                <span><strong>破除歐化被動句</strong> (Eliminate Robotic Translationese)</span>
+              </label>
+              <label class="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-indigo-50/40">
+                <input type="checkbox" id="nc-tags" checked onchange="compilePrompt()" class="mt-0.5 rounded text-indigo-600" />
+                <span><strong>保留數字與代碼標籤</strong> (Preserve Numbers &amp; Code Tags)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 7. XML Terminology Box -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-800">
+                7. 強制術語表 <code class="text-emerald-700 font-mono">&lt;terminology_constraints&gt;</code> (永久免費免上傳檔案)
+              </label>
+              <span class="text-[11px] text-slate-400">每行一筆：原文 = 譯文 或 DNT</span>
+            </div>
+            <textarea id="cfg-terms" rows="4" oninput="compilePrompt()" class="w-full rounded-xl border border-slate-300 bg-slate-50 p-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">hallucinate = 產生幻覺 (嚴禁翻成「產生幻覺流利的」)
+mask = 掩蓋 (動詞，嚴禁死譯成名詞「面具了」)
+human-in-the-loop = 人機協作 (嚴禁死譯成「人類在迴圈中」)
+terminology consistency = 術語一致性
+OpenAI = DNT (Do Not Translate 保持原文)</textarea>
+          </div>
+
+          <!-- 8. Few-Shot Triplet -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-800">
+                8. 三元組示範教學 <code class="text-purple-700 font-mono">&lt;few_shot_examples&gt;</code> (選填，範本 B 必備)
+              </label>
+            </div>
+            <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div>
+                <span class="text-[11px] font-mono font-bold text-slate-500">① 原文 &lt;source_text&gt;</span>
+                <input id="cfg-ex-src" type="text" oninput="compilePrompt()" value="The new API enables developers to deploy models with minimal latency." class="w-full mt-0.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-mono" />
+              </div>
+              <div>
+                <span class="text-[11px] font-mono font-bold text-rose-600">② 爛機翻 &lt;raw_mt&gt;</span>
+                <input id="cfg-ex-mt" type="text" oninput="compilePrompt()" value="新的 API 使開發人員能夠以最小的延遲進行模型的部署。" class="w-full mt-0.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-mono" />
+              </div>
+              <div>
+                <span class="text-[11px] font-mono font-bold text-emerald-700">③ 人類滿分範本 &lt;gold_pe&gt;</span>
+                <input id="cfg-ex-pe" type="text" oninput="compilePrompt()" value="透過新版 API，開發人員能以極低延遲部署模型。" class="w-full mt-0.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-mono" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: LIVE COMPILED PROMPT + STRESS TEST -->
+        <div class="lg:col-span-6 space-y-6">
+          <!-- Compiled System Prompt Box -->
+          <div class="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden">
+            <div class="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                <span class="text-xs font-bold text-white tracking-wide">第三步：複製貼到 Zapier Chatbot ➔ Instructions</span>
+              </div>
+              <button onclick="copyText('compiled-output', this)" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow">
+                📋 複製系統指令 / Copy Instructions
+              </button>
+            </div>
+            <pre id="compiled-output" class="p-5 text-xs text-slate-200 leading-relaxed overflow-x-auto max-h-[460px] whitespace-pre-wrap"></pre>
+          </div>
+
+          <!-- Step 4: Stress Test Input & Expected Output -->
+          <div class="bg-white rounded-3xl border-2 border-indigo-200 shadow-sm p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-md bg-indigo-100 text-indigo-800 font-black text-[11px] uppercase">第四步：驗收成果 / Step 4: Stress Test</span>
+                <h3 class="font-black text-slate-900 text-base mt-1">
+                  🧪 XML 結構化壓力測試題（故意埋了 3 個機翻地雷！）
+                </h3>
+              </div>
+              <button onclick="copyText('stress-test-input', this)" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+                📋 複製測試語料 / Copy Test Input
+              </button>
+            </div>
+
+            <pre id="stress-test-input" class="bg-slate-900 text-amber-300 p-4 rounded-2xl text-xs overflow-x-auto whitespace-pre-wrap">&lt;source_text&gt;
+Large language models can hallucinate fluent translations that mask critical omissions, requiring human-in-the-loop post-editing to ensure terminology consistency.
+&lt;/source_text&gt;
+&lt;raw_mt&gt;
+大型語言模型可以產生幻覺流利的翻譯，這面具了關鍵的遺漏，需要人類在迴圈中的譯後編輯來確保術語一致性。
+&lt;/raw_mt&gt;</pre>
+
+            <!-- Toggle to view expected AI output -->
+            <div class="pt-2">
+              <button onclick="toggleExpectedOutput()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-xs flex items-center justify-between transition">
+                <span>👀 點擊預覽：貼進 Zapier 後，你的機器人會如何漂亮回答？ (See Expected AI Response)</span>
+                <span id="expected-arrow">▼</span>
+              </button>
+              <div id="expected-output-box" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs space-y-3">
+                <div class="font-bold text-indigo-900">📊 階段一：MQM 錯誤診斷表 (Stage 1: MQM Error Audit)</div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse border border-slate-300 text-[11px] bg-white">
+                    <thead class="bg-slate-100">
+                      <tr>
+                        <th class="border border-slate-300 p-1.5">原機翻片段</th>
+                        <th class="border border-slate-300 p-1.5">MQM 錯誤類型</th>
+                        <th class="border border-slate-300 p-1.5">嚴重度扣分</th>
+                        <th class="border border-slate-300 p-1.5">診斷說明</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="border border-slate-300 p-1.5 font-mono text-rose-700">產生幻覺流利的翻譯</td>
+                        <td class="border border-slate-300 p-1.5">Fluency / Grammar</td>
+                        <td class="border border-slate-300 p-1.5 font-bold text-amber-600">Major (-5)</td>
+                        <td class="border border-slate-300 p-1.5">結構糾結，應為「產生看似流暢卻屬幻覺的譯文」</td>
+                      </tr>
+                      <tr>
+                        <td class="border border-slate-300 p-1.5 font-mono text-rose-700">這面具了關鍵的遺漏</td>
+                        <td class="border border-slate-300 p-1.5">Accuracy / Mistranslation</td>
+                        <td class="border border-slate-300 p-1.5 font-bold text-rose-600">Critical (-25)</td>
+                        <td class="border border-slate-300 p-1.5"><code class="font-mono">mask</code> 在此為動詞「掩蓋」，機翻死譯為名詞「面具」</td>
+                      </tr>
+                      <tr>
+                        <td class="border border-slate-300 p-1.5 font-mono text-rose-700">人類在迴圈中的</td>
+                        <td class="border border-slate-300 p-1.5">Terminology Violation</td>
+                        <td class="border border-slate-300 p-1.5 font-bold text-amber-600">Major (-5)</td>
+                        <td class="border border-slate-300 p-1.5">違反強制術語表，<code class="font-mono">human-in-the-loop</code> 應譯為「人機協作」</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="font-bold text-emerald-900 pt-1">✅ 階段二：最終譯後編輯定稿 (Stage 2: Final Post-Edited Text)</div>
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl font-bold text-slate-900 text-sm">
+                  大型語言模型可能會產生看似流暢實則虛構的幻覺譯文，進而掩蓋關鍵的漏譯；因此必須導入人機協作的譯後編輯流程，以確保術語一致性。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 5: GOOGLE SITES PORTFOLIO EMBED GENERATOR                 -->
+    <!-- ================================================================= -->
+    <section id="sec-portfolio" class="scroll-mt-20">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-black text-xs uppercase tracking-wider">Part 05</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+          <span class="lang-zh">第五步：產生 Google Sites 作品集卡片（解決空白拒絕連線問題）</span>
+          <span class="lang-en text-lg sm:text-xl font-bold text-slate-600 block">Step 5: Google Sites Portfolio Card Generator (Bypass X-Frame-Options)</span>
+        </h2>
+      </div>
+      <p class="text-slate-600 mb-6 max-w-4xl text-sm">
+        <span class="lang-zh block">為什麼不能直接把 Zapier 網址用 Google Sites 的「嵌入網址」放進網頁？因為 Zapier 有安全限制（<code class="font-mono bg-slate-200 px-1 rounded">X-Frame-Options</code>），直接嵌網址會顯示一片空白或拒絕連線。<strong>解決方法：</strong>在下方填入你的資訊，複製右側生成的 HTML 卡片程式碼，在 Google Sites 選擇<strong>「嵌入 (Embed) ➔ 嵌入程式碼 (Embed Code)」</strong>貼上即可！</span>
+        <span class="lang-en block text-xs text-slate-500 mt-1">Zapier blocks direct iframe URL embeds in Google Sites due to <code class="font-mono">X-Frame-Options</code> security headers. Use this generator to build a styled launcher card with ISO 18587 &amp; MQM badges that opens your live AI Post-Editor in a clean window!</span>
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left Inputs -->
+        <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">1. 你的 Zapier 公開分享網址 / Zapier Public URL</label>
+            <input id="card-url" type="url" oninput="updatePortfolioCard()" value="https://your-ape-bot.zapier.app" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">2. 作品集機器人名稱 / Bot Title</label>
+            <input id="card-title" type="text" oninput="updatePortfolioCard()" value="生醫科技英中自動譯後編輯器 (MQM-APE)" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">3. 你的名字 / Author</label>
+              <input id="card-author" type="text" oninput="updatePortfolioCard()" value="王小明 (Alex Wang)" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1">4. 徽章標籤 / Badge</label>
+              <input id="card-badge" type="text" oninput="updatePortfolioCard()" value="ISO 18587 Full PE × GEMBA-MQM" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1">5. 作品簡介 / Short Description</label>
+            <textarea id="card-desc" rows="2" oninput="updatePortfolioCard()" class="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs">採用 OpenAI 結構化 XML 術語沙盒與兩階段 MQM 錯誤診斷框架，精準消除機器翻譯腔並防止過度編修。</textarea>
+          </div>
+          <button onclick="copyText('card-html-code', this)" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition">
+            📋 複製 Google Sites 嵌入程式碼 / Copy Embed HTML
+          </button>
+        </div>
+
+        <!-- Right Live Preview + Code -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-slate-200/70 rounded-3xl p-6 border border-slate-300">
+            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">👀 卡片即時預覽 / Live Google Sites Card Preview</div>
+            <div id="card-live-preview"></div>
+          </div>
+          <div class="bg-slate-900 rounded-2xl p-4 border border-slate-800">
+            <div class="text-[11px] font-mono text-slate-400 mb-2">HTML Embed Code (貼入 Google Sites ➔ 嵌入程式碼):</div>
+            <pre id="card-html-code" class="text-[11px] text-emerald-300 font-mono overflow-x-auto max-h-36 whitespace-pre-wrap"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-8 mt-16 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <strong class="text-white">AI 譯後編輯 (APE) 實戰白話雙語教學網</strong> — 結合 OpenAI Prompt Engineering、ISO 18587:2017 與微軟 GEMBA-MQM 研究框架
+      </div>
+      <div class="font-mono text-[11px] text-slate-500">
+        Designed for Translation Technology &amp; Portfolio Workshops
+      </div>
+    </div>
+  </footer>
+
+  <!-- INTERACTIVE JAVASCRIPT -->
+  <script>
+    // 1. Language Switcher
+    function setLang(mode) {
+      document.body.setAttribute('data-lang', mode);
+      ['bi', 'zh', 'en'].forEach(m => {
+        const btn = document.getElementById('btn-lang-' + m);
+        if (m === mode) {
+          btn.className = 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white transition';
+        } else {
+          btn.className = 'px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition';
+        }
+      });
+    }
+
+    // 2. Apply Archetype Presets (A, B, C, D)
+    function applyPreset(arch) {
+      document.getElementById('cfg-arch').value = arch;
+      if (arch === 'A') {
+        document.getElementById('cfg-iso').value = 'light';
+      } else {
+        document.getElementById('cfg-iso').value = 'full';
+      }
+      compilePrompt();
+      document.getElementById('sec-compiler').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 3. Load Full Teaching Preset
+    function loadTeachingPreset() {
+      document.getElementById('cfg-arch').value = 'C';
+      document.getElementById('cfg-pair').value = 'en-zhTW';
+      document.getElementById('cfg-syslang').value = 'zh';
+      document.getElementById('cfg-iso').value = 'full';
+      document.getElementById('nc-synonym').checked = true;
+      document.getElementById('nc-hallucinate').checked = true;
+      document.getElementById('nc-european').checked = true;
+      document.getElementById('nc-tags').checked = true;
+      compilePrompt();
+    }
+
+    // 4. Live GPT-5.6 System Prompt Compiler
+    function compilePrompt() {
+      const arch = document.getElementById('cfg-arch').value;
+      const pair = document.getElementById('cfg-pair').value;
+      const syslang = document.getElementById('cfg-syslang').value;
+      const iso = document.getElementById('cfg-iso').value;
+      const domain = document.getElementById('cfg-domain').value;
+      const terms = document.getElementById('cfg-terms').value.trim();
+      const exSrc = document.getElementById('cfg-ex-src').value.trim();
+      const exMt = document.getElementById('cfg-ex-mt').value.trim();
+      const exPe = document.getElementById('cfg-ex-pe').value.trim();
+
+      const ncSynonym = document.getElementById('nc-synonym').checked;
+      const ncHallucinate = document.getElementById('nc-hallucinate').checked;
+      const ncEuropean = document.getElementById('nc-european').checked;
+      const ncTags = document.getElementById('nc-tags').checked;
+
+      const pairMap = {
+        'en-zhTW': 'English (Source) ➔ Traditional Chinese, Taiwan Standard zh-TW (Target)',
+        'zhTW-en': 'Traditional Chinese (Source) ➔ Professional US English (Target)',
+        'ja-zhTW': 'Japanese (Source) ➔ Traditional Chinese, Taiwan Standard zh-TW (Target)'
+      };
+
+      let prompt = '';
+
+      if (syslang === 'zh') {
+        prompt += `# 角色與任務目標 (Role & Objective)\n`;
+        prompt += `你是一台符合 ISO 18587:2017 國際標準的專業「自動譯後編輯器 (Automatic Post-Editor, APE)」。\n`;
+        prompt += `- **作業語言對**：${pairMap[pair]}\n`;
+        prompt += `- **專業領域**：${domain}\n`;
+        prompt += `- **編修力道**：${iso === 'full' ? 'Full PE (完整編修：達到母語出版級流暢度，徹底消除機器翻譯腔)' : 'Light PE (輕度編修：最小修改距離，僅修正致命誤譯與語法錯誤，不改寫文風)'}\n\n`;
+
+        prompt += `# 嚴格防呆護欄 (Negative Constraints)\n`;
+        if (ncSynonym) prompt += `- **禁止過度編修 (No Over-editing)**：若原機器翻譯 (\`<raw_mt>\`) 已準確且自然，嚴禁為了個人偏好而替換同義詞或重組句型。\n`;
+        if (ncHallucinate) prompt += `- **禁止腦補與漏譯 (Zero Hallucination/Omission)**：嚴格核對原文 (\`<source_text>\`)，不得遺漏任何限定詞，亦不得自行添加原文未提及的解釋。\n`;
+        if (ncEuropean) prompt += `- **破除歐化翻譯腔 (De-Europeanization)**：消除生硬的被動語態與冗長名詞化結構，改用自然道地的台灣繁體中文邏輯。\n`;
+        if (ncTags) prompt += `- **保留標籤與數值 (Tag Preservation)**：完整保留所有數字、單位、程式碼與專有名詞格式。\n\n`;
+
+        prompt += `# 強制術語表沙盒 (Mandatory Terminology Sandbox)\n`;
+        prompt += `你必須 100% 遵守以下 \`<terminology_constraints>\` 密封盒內的詞彙規定（標註 DNT 代表禁止翻譯）：\n`;
+        prompt += `<terminology_constraints>\n${terms || '無特定術語限制'}\n</terminology_constraints>\n\n`;
+
+        if (exSrc && exMt && exPe) {
+          prompt += `# 三元組改稿示範 (Few-Shot Triplet Calibration)\n`;
+          prompt += `請參考以下「原文 + 機器翻譯 ➔ 人類滿分定稿」的改稿力道與文風：\n`;
+          prompt += `<few_shot_examples>\n`;
+          prompt += `  <example>\n`;
+          prompt += `    <source_text>${exSrc}</source_text>\n`;
+          prompt += `    <raw_mt>${exMt}</raw_mt>\n`;
+          prompt += `    <gold_pe>${exPe}</gold_pe>\n`;
+          prompt += `  </example>\n`;
+          prompt += `</few_shot_examples>\n\n`;
+        }
+
+        prompt += `# 執行流程與輸出格式 (Execution Workflow & Output Format)\n`;
+        prompt += `使用者會提供裝在 \`<source_text>\` 與 \`<raw_mt>\` 標籤內的待改稿件。請嚴格依序輸出：\n`;
+        if (arch === 'C') {
+          prompt += `1. **【階段一：GEMBA-MQM 錯誤診斷表】**：先以 Markdown 表格列出 \`<raw_mt>\` 中的錯誤片段、MQM 錯誤分類（Accuracy 誤譯/漏譯、Fluency 語法/翻譯腔、Terminology 術語違規）、嚴重度扣分（Critical -25 / Major -5 / Minor -1）與簡短診斷。\n`;
+          prompt += `2. **【階段二：最終譯後編輯定稿 (Final PE)】**：只針對階段一抓出的錯誤進行精準修改，給出完美定稿。\n`;
+          prompt += `3. **【階段三：修改理由摘要】**：以條列式簡述關鍵修改原因。`;
+        } else if (arch === 'D') {
+          prompt += `1. **【最終譯後編輯定稿 (Final PE)】**：給出符合所有術語規範的定稿。\n`;
+          prompt += `2. **【術語合規檢查表 (Terminology Audit Table)】**：以 Markdown 表格列出原文術語、原機翻譯法、定稿譯法與合規狀態 (✅ Pass)。`;
+        } else {
+          prompt += `1. **【最終譯後編輯定稿 (Final PE)】**：直接輸出精準編修後的最終譯文。\n`;
+          prompt += `2. **【關鍵修改說明 (Edit Log)】**：以 2~3 點條列說明主要修正之處。`;
+        }
+      } else {
+        // English System Prompt (Outputs in Target Language / Traditional Chinese)
+        prompt += `# Role & Objective\n`;
+        prompt += `You are an ISO 18587:2017 compliant Automatic Post-Editor (APE).\n`;
+        prompt += `- **Language Pair**: ${pairMap[pair]}\n`;
+        prompt += `- **Domain**: ${domain}\n`;
+        prompt += `- **Editing Intensity**: ${iso === 'full' ? 'ISO 18587 Full Post-Editing (Publishable native quality; eliminate translationese)' : 'ISO 18587 Light Post-Editing (Minimal edit distance; fix only critical accuracy and grammar errors)'}\n\n`;
+
+        prompt += `# Negative Constraints (Strict Guardrails)\n`;
+        if (ncSynonym) prompt += `- **No Over-Editing**: Do NOT replace accurate words with synonyms or rewrite valid sentence structures in \`<raw_mt>\`.\n`;
+        if (ncHallucinate) prompt += `- **Zero Hallucination/Omission**: Cross-check against \`<source_text>\`. Never drop modifiers or invent unstated facts.\n`;
+        if (ncEuropean) prompt += `- **Eliminate Translationese**: Replace awkward calques and robotic passive voice with idiomatic target phrasing.\n`;
+        if (ncTags) prompt += `- **Preserve Tags & Numbers**: Keep all placeholders, code tags, and numerical values intact.\n\n`;
+
+        prompt += `# Mandatory Terminology Sandbox\n`;
+        prompt += `Strictly enforce all rules inside \`<terminology_constraints>\` (DNT = Do Not Translate):\n`;
+        prompt += `<terminology_constraints>\n${terms || 'None specified'}\n</terminology_constraints>\n\n`;
+
+        if (exSrc && exMt && exPe) {
+          prompt += `# Few-Shot Triplet Calibration\n`;
+          prompt += `<few_shot_examples>\n`;
+          prompt += `  <example>\n`;
+          prompt += `    <source_text>${exSrc}</source_text>\n`;
+          prompt += `    <raw_mt>${exMt}</raw_mt>\n`;
+          prompt += `    <gold_pe>${exPe}</gold_pe>\n`;
+          prompt += `  </example>\n`;
+          prompt += `</few_shot_examples>\n\n`;
+        }
+
+        prompt += `# Execution Workflow & Output Format (Respond in Traditional Chinese zh-TW)\n`;
+        if (arch === 'C') {
+          prompt += `1. **Stage 1: GEMBA-MQM Error Audit Table**: First, output a Markdown table identifying errors in \`<raw_mt>\`, their MQM category (Accuracy/Fluency/Terminology), severity score (Critical -25 / Major -5 / Minor -1), and explanation.\n`;
+          prompt += `2. **Stage 2: Final Post-Edited Text**: Modify ONLY the segments flagged in Stage 1.\n`;
+          prompt += `3. **Stage 3: Post-Editing Rationale**: Bullet points summarizing key fixes.`;
+        } else {
+          prompt += `1. **Final Post-Edited Text**: Output the polished translation.\n`;
+          prompt += `2. **Edit Log & Terminology Verification**: Briefly list key corrections made.`;
+        }
+      }
+
+      document.getElementById('compiled-output').textContent = prompt;
+    }
+
+    // 5. Toggle Expected Stress Test Output
+    function toggleExpectedOutput() {
+      const box = document.getElementById('expected-output-box');
+      const arrow = document.getElementById('expected-arrow');
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        arrow.textContent = '▲';
+      } else {
+        box.classList.add('hidden');
+        arrow.textContent = '▼';
+      }
+    }
+
+    // 6. Portfolio Embed Card Generator
+    function updatePortfolioCard() {
+      const url = document.getElementById('card-url').value.trim() || 'https://zapier.app';
+      const title = document.getElementById('card-title').value.trim();
+      const author = document.getElementById('card-author').value.trim();
+      const badge = document.getElementById('card-badge').value.trim();
+      const desc = document.getElementById('card-desc').value.trim();
+
+      const htmlCode = `<div style="font-family:'Inter','Noto Sans TC',sans-serif;max-width:540px;margin:16px auto;background:linear-gradient(145deg,#0f172a,#1e293b);color:#ffffff;border-radius:20px;padding:24px;box-shadow:0 12px 30px rgba(15,23,42,0.25);border:1px solid #334155;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <span style="background:#4f46e5;color:#ffffff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;letter-spacing:0.5px;">${badge}</span>
+    <span style="color:#94a3b8;font-size:12px;">Designed by ${author}</span>
+  </div>
+  <h3 style="margin:0 0 8px 0;font-size:20px;font-weight:800;color:#f8fafc;">${title}</h3>
+  <p style="margin:0 0 20px 0;font-size:13px;line-height:1.6;color:#cbd5e1;">${desc}</p>
+  <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;width:100%;box-sizing:border-box;text-align:center;background:#10b981;color:#052e16;font-weight:800;font-size:14px;padding:12px 20px;border-radius:12px;text-decoration:none;box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+    🚀 啟動 AI 自動譯後編輯器 / Launch Live APE Bot ↗
+  </a>
+</div>`;
+
+      document.getElementById('card-live-preview').innerHTML = htmlCode;
+      document.getElementById('card-html-code').textContent = htmlCode;
+    }
+
+    // 7. Universal Copy Button Helper
+    function copyText(elementId, btn) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = '✅ 已複製！ / Copied!';
+        setTimeout(() => { btn.innerHTML = original; }, 1800);
+      });
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      compilePrompt();
+      updatePortfolioCard();
+    });
+  </script>
+</body>
+</html>
